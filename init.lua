@@ -143,6 +143,7 @@ vim.opt.rtp:prepend(lazypath)
 --  To update plugins you can run
 --    :Lazy update
 --
+
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
@@ -330,6 +331,9 @@ require('lazy').setup({
 
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
+    opts = {
+      inlay_hints = { enabled = true },
+    },
     dependencies = {
       -- Automatically install LSPs and related tools to stdpath for Neovim
       { 'williamboman/mason.nvim', config = true }, -- NOTE: Must be loaded before dependants
@@ -547,9 +551,21 @@ require('lazy').setup({
             -- certain features of an LSP (for example, turning off formatting for tsserver)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
             require('lspconfig')[server_name].setup(server)
+            require('lspconfig')['clangd'].setup { 'clangd' }
           end,
         },
       }
+    end,
+  },
+
+  {
+    'lukas-reineke/lsp-format.nvim',
+    config = function()
+      local on_attach = function(client, bufnr)
+        require('lsp-format').on_attach(client, bufnr)
+        -- ... custom code if needed ...
+      end
+      require('lspconfig').clangd.setup { on_attach = on_attach }
     end,
   },
 
@@ -711,7 +727,7 @@ require('lazy').setup({
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', 'tokyonight-night',or 'tokyonight-day'.
       vim.cmd.colorscheme 'tokyonight-night'
 
       -- You can configure highlights by doing something like:
@@ -840,11 +856,10 @@ require('lazy').setup({
 })
 
 -- Load clangd
-local util = require 'lspconfig.util'
-
-require('lspconfig').clangd.setup {
-  root_dir = util.root_pattern('.clangd', '.clang-tidy', '.clang-format', 'compile_commands.json', 'compile_flags.txt', 'configure.ac', '.git', 'Makefile'),
-}
+-- local util = require 'lspconfig.util'
+-- require('lspconfig').clangd.setup {
+--   root_dir = util.root_pattern('.clangd', '.clang-tidy', '.clang-format', 'compile_commands.json', 'compile_flags.txt', 'configure.ac', '.git', 'Makefile'),
+-- }
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
